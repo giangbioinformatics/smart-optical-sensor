@@ -1,0 +1,13 @@
+Đợt 1:
+Nước cất:
+xóa sau tấm số 5
+Tấm số 7 chuyển thành tấm số 2
+m:
+xóa sau tấm số 5
+Tấm số 6 chuyển thành tấm số 3
+p-ten:
+tấm số 6 chuyển thành tấm số 5
+s:
+xóa tấm sau số 5
+tấm 6 chuyển thành 1
+Đợt 2 và 3: Xóa sau tấm số 5

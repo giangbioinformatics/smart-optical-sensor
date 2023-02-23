@@ -1,0 +1,8 @@
+features	R2
+meanR	0.724
+meanG	0.8942
+meanB	0.1143
+modeR	0.731
+modeG	0.8646
+modeB	0.0186
+multiple	0.9255

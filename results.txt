@@ -1,0 +1,24 @@
+meanB    2.837964
+meanG    2.766372
+meanR    2.733991
+modeB    2.586020
+modeG    2.420615
+modeR    2.341874
+dtype: float64
+>>> np.std(ratio)
+meanB    2.197086
+meanG    0.594874
+meanR    6.971958
+modeB    2.772634
+modeG    0.866025
+modeR    7.952004
+dtype: float64
+>>> np.std(delta)
+meanB    0.564778
+meanG    1.006338
+meanR    1.310561
+modeB    0.866025
+modeG    1.198958
+modeR    1.118034
+dtype: float64
+

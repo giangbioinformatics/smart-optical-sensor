@@ -1,0 +1,8 @@
+features	rmse
+meanR	1.4061
+meanG	1.2074
+meanB	2.6731
+modeR	1.4173
+modeG	1.2214
+modeB	2.7127
+multiple	0.8981
