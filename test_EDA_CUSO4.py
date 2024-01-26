@@ -1,0 +1,55 @@
+# Example
+# Feature
+data_path = "EDA/CUSO4"
+indir = f"{data_path}/raw_data"
+outdir = f"{data_path}/process_data"
+# Processing images
+processing_images(
+    indir=indir,
+    outdir=outdir,
+    constant=[100, 150, 40],
+    overwrite=True,
+    threshold_stdev=5,
+    threshold_ratio=math.log(1.2, 2),
+    threshold_delta=15,
+)
+
+
+def process_data_and_model(data_path, process_type, train_batch, test_batch, outdir):
+    train_rgb_path = f"{data_path}/process_data/{process_type}/RGB_values.csv"
+    test_rgb_path = f"{data_path}/process_data/{process_type}/RGB_values.csv"
+    train_concentration = f"{data_path}/raw_data/{train_batch}.csv"
+    test_concentration = f"{data_path}/raw_data/{test_batch}.csv"
+    features = "meanR,meanG,meanB,modeR,modeB,modeG"
+    degree = 2
+    prefix = "demo"
+    outdir = os.path.join(outdir, process_type)
+    os.makedirs(outdir, exist_ok=True)
+    end2end_model(
+        train_rgb_path,
+        train_concentration,
+        test_rgb_path,
+        test_concentration,
+        features,
+        degree,
+        outdir,
+        prefix,
+    )
+
+
+# 0. Model raw data
+outdir = f"{data_path}/result"
+for test_batch in ["batch3", "batch1"]:
+    process_data_and_model(data_path, "raw_roi", "batch2", test_batch, outdir)
+
+# 1. Model ratio_normalized_roi
+for test_batch in ["batch3", "batch1"]:
+    process_data_and_model(
+        data_path, "ratio_normalized_roi", "batch2", test_batch, outdir
+    )
+
+# 2. Model delta_normalized_roi
+for test_batch in ["batch3", "batch1"]:
+    process_data_and_model(
+        data_path, "delta_normalized_roi", "batch2", test_batch, outdir
+    )
