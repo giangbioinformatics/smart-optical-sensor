@@ -17,16 +17,16 @@ batches = ["batch1", "batch2", "batch3"]
 # Processing images
 # without filter
 process_outdir = f"{data_path}/process_data_test"
-processing_images(
-    indir=indir,
-    outdir=process_outdir,
-    constant=[100, 145, 40],
-    bg_index=[20, 80, 80, -80],
-    overwrite=True,
-    threshold_stdev=np.inf,
-    threshold_ratio=np.inf,
-    threshold_delta=np.inf,
-)
+# processing_images(
+#     indir=indir,
+#     outdir=process_outdir,
+#     constant=[100, 145, 40],
+#     bg_index=[20, 80, 80, -80],
+#     overwrite=True,
+#     threshold_stdev=np.inf,
+#     threshold_ratio=np.inf,
+#     threshold_delta=np.inf,
+# )
 # QUESTION: DOES THE NORMALIZATION AFFECT THE RESULT?
 # question: does the background affect the result ?
 # 1. 3 batches, 3 process types, 3 models not filter and feature selection

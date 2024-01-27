@@ -1,9 +1,9 @@
-from smartsensor.smartsensor import processing_images, end2end_model
+from smartsensor.base import processing_images, end2end_model
 
 # Feature
 indir = "examples/raw_data"
 outdir = "examples/process_data"
-processing_images(indir=indir, outdir=outdir)
+# processing_images(indir=indir, outdir=outdir)
 
 # Model
 train_rgb_path = "examples/process_data/ratio_normalized_roi/RGB_values.csv"
