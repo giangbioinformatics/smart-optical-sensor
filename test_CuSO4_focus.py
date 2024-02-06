@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 
 # params
+# Summary: The data is CuSO4 focus which means the camera is focus on the CuSO4 solution to capture the image
 data_path = "EDA/CUSO4"
 indir = f"{data_path}/raw_data"
 
@@ -251,42 +252,4 @@ for m in metrics:
     sum_stats.append(stats)
 pd.concat(sum_stats).sort_values("metric").to_csv(
     f"{outdir_e2e}/sum_stats.csv", index=False
-)
-
-
-raw_res = []
-process_type = "ratio_normalized_roi"
-prefix = "ratio_roi"
-indir_e2e = f"{process_outdir}/{process_type}"
-outdir_e2e = f"{data_path}/result_test_feature_selection"
-features = "meanR,meanG,meanB,modeR,modeB,modeG"
-degree = 1
-outdir = os.path.join(outdir_e2e, process_type)
-os.makedirs(outdir, exist_ok=True)
-# raw data
-for batch in batches:
-    print(f"Processing batch {batch}")
-    # raw_data
-    train_rgb_path = f"{indir_e2e}/RGB_values.csv"
-    train_concentration = f"{indir}/{batch}.csv"
-    # test
-    remain_batches = [x for x in batches if x != batch]
-    test_rgb_path = f"{indir_e2e}/RGB_values.csv"
-    for remain_batch in remain_batches:
-        print(f"Testing on batch {remain_batch}")
-        test_concentration = f"{indir}/{remain_batch}.csv"
-        metric, detail = end2end_model(
-            train_rgb_path,
-            train_concentration,
-            test_rgb_path,
-            test_concentration,
-            features,
-            degree,
-            outdir,
-            prefix,
-            skip_feature_selection=False,
-        )
-        raw_res.append(metric)
-pd.DataFrame(pd.concat(raw_res)).to_csv(
-    f"{outdir_e2e}/result_ratio_iterate_each_batches.csv", index=False
 )
