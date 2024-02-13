@@ -23,7 +23,12 @@ warnings.filterwarnings("ignore")
 
 # Split the images by train test split
 def train_test_split_by_conv(
-    conv_path: str, rgb_path: str, process_type: str, test_size: float, outdir: str
+    conv_path: str,
+    rgb_path: str,
+    process_type: str,
+    test_size: float,
+    random_state: int,
+    outdir: str,
 ):
     os.makedirs(outdir, exist_ok=True)
     data = get_data(rgb_path=rgb_path, concentration=conv_path, outdir=outdir)
@@ -43,17 +48,29 @@ def train_test_split_by_conv(
         subset_conv = data[data["concentration"] == concentration]
         x_data = subset_conv.drop(columns=["concentration"])
         y_data = subset_conv["concentration"]
-        (
-            image_train,
-            image_test,
-            concentration_train,
-            concentration_test,
-        ) = train_test_split(
-            x_data,
-            y_data,
-            test_size=test_size,
-            random_state=1,
-        )
+        if random_state is not None:
+            (
+                image_train,
+                image_test,
+                concentration_train,
+                concentration_test,
+            ) = train_test_split(
+                x_data,
+                y_data,
+                test_size=test_size,
+                random_state=1,
+            )
+        else:
+            (
+                image_train,
+                image_test,
+                concentration_train,
+                concentration_test,
+            ) = train_test_split(
+                x_data,
+                y_data,
+                test_size=test_size,
+            )
 
         # Append the splits to the lists
         image_train_list.append(image_train)
@@ -603,34 +620,81 @@ def processing_images(
             )
 
 
+def prepare_data(
+    train_concentrations: list,
+    test_rgb_path: str,
+    test_concentrations: list,
+    train_rgb_path: str,
+    outdir: str,
+    prefix: str,
+    random_state: int,
+    test_size: float = 0.3,
+):
+    # Load data
+    # case 1: No testing data, using all training dataset to split
+    # if have more than one train datasets, split and combine each dataset
+    if len(test_concentrations) == 0 or test_rgb_path is None:
+        combined_train = []
+        combined_test = []
+        for train_conv in train_concentrations:
+            train, test, train_path, test_path = train_test_split_by_conv(
+                conv_path=train_conv,
+                rgb_path=train_rgb_path,
+                process_type=prefix,
+                test_size=test_size,
+                random_state=random_state,
+                outdir=outdir,
+            )
+            combined_train.append(train)
+            combined_test.append(test)
+        train = pd.concat(combined_train, ignore_index=True)
+        test = pd.concat(combined_test, ignore_index=True)
+    else:
+        # case 2: Require train data, test data, not use split
+        combined_train = []
+        combined_test = []
+        for train_conv in train_concentrations:
+            train = get_data(
+                rgb_path=train_rgb_path, concentration=train_conv, outdir=outdir
+            )
+            combined_train.append(train)
+        train = pd.concat(combined_train, ignore_index=True)
+        for test_conv in test_concentrations:
+            test = get_data(
+                rgb_path=test_rgb_path, concentration=test_conv, outdir=outdir
+            )
+            combined_test.append(test)
+        test = pd.concat(combined_test, ignore_index=True)
+    train_path = os.path.join(outdir, f"{prefix}_train.csv")
+    test_path = os.path.join(outdir, f"{prefix}_test.csv")
+    train.to_csv(train_path, index=False)
+    test.to_csv(test_path, index=False)
+    return train, test, train_path, test_path
+
+
 def end2end_model(
     train_rgb_path: str,
-    train_concentration: str,
+    train_concentrations: list,
     test_rgb_path: str,
-    test_concentration: str,
+    test_concentrations: list,
     features: str,
     degree: int,
     outdir: str,
     prefix: str,
     skip_feature_selection: bool = True,
     test_size: float = 0.3,
+    random_state: int = 1,
 ):
-    # Load data
-    if test_concentration is None or test_rgb_path is None:
-        train, test, train_path, test_path = train_test_split_by_conv(
-            conv_path=train_concentration,
-            rgb_path=train_rgb_path,
-            process_type=prefix,
-            test_size=test_size,
-            outdir=outdir,
-        )
-    else:
-        train = get_data(
-            rgb_path=train_rgb_path, concentration=train_concentration, outdir=outdir
-        )
-        test = get_data(
-            rgb_path=test_rgb_path, concentration=test_concentration, outdir=outdir
-        )
+    train, test, train_path, test_path = prepare_data(
+        train_concentrations=train_concentrations,
+        test_rgb_path=test_rgb_path,
+        test_concentrations=test_concentrations,
+        train_rgb_path=train_rgb_path,
+        outdir=outdir,
+        prefix=prefix,
+        test_size=test_size,
+        random_state=random_state,
+    )
     # Train
     features = features.split(",")
     train_model, selected_features = train_regression(
@@ -655,12 +719,12 @@ def end2end_model(
         degree=degree,
     )
 
-    if test_concentration is None or test_rgb_path is None:
-        train_dataset = f"{os.path.basename(train_concentration).split('.')[0]}_by_split_{test_size}"
-        test_dataset = f"{os.path.basename(train_concentration).split('.')[0]}_by_split_{test_size}"
+    if test_concentrations is None or test_rgb_path is None:
+        train_dataset = f"{'_'.join([os.path.basename(train_concentration).split('.')[0] for train_concentration in train_concentrations])}_train_by_split_{str(1-test_size)}"  # noqa
+        test_dataset = f"{'_'.join([os.path.basename(train_concentration).split('.')[0] for train_concentration in train_concentrations])}_test_by_split_{test_size}"  # noqa
     else:
-        train_dataset = f"{os.path.basename(train_concentration).split('.')[0]}"
-        test_dataset = f"{os.path.basename(test_concentration).split('.')[0]}"
+        train_dataset = f"{'+'.join([os.path.basename(train_concentration).split('.')[0] for train_concentration in train_concentrations])}"  # noqa
+        test_dataset = f"{'+'.join([os.path.basename(test_concentration).split('.')[0] for test_concentration in test_concentrations])}"  # noqa
     # train res
     train_metric["train_data"] = train_dataset
     train_metric["test_data"] = train_dataset
@@ -677,8 +741,8 @@ def end2end_model(
     metric = pd.concat([train_metric, test_metric], axis=0)
     detail = pd.concat([train_detail, test_detail], axis=0)
     # Export data
-    metric_path = os.path.join(outdir, f"metric_{train_dataset}_{test_dataset}.csv")
-    detail_path = os.path.join(outdir, f"detail_{train_dataset}_{test_dataset}.csv")
+    metric_path = os.path.join(outdir, f"metric_{train_dataset}&{test_dataset}.csv")
+    detail_path = os.path.join(outdir, f"detail_{train_dataset}&{test_dataset}.csv")
     metric.to_csv(metric_path, index=False)
     detail.to_csv(detail_path, index=False)
     return metric, detail
