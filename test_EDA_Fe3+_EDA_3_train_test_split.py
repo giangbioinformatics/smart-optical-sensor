@@ -1,26 +1,41 @@
 from smartsensor.base import (
+    processing_images,
     end2end_model,
 )
+import numpy as np
 import glob
 import os
 import pandas as pd
 
 # params
 # Summary: The data is CuSO4 focus which means the camera is focus on the CuSO4 solution to capture the image
-data_path = "EDA/120223_CuSO4_not_focus"
+data_path = "EDA/Fe3+"
 indir = f"{data_path}/raw_data"
 test_size = 0.2
 batches = ["batch1", "batch2", "batch3"]
 
 # without filter
 process_outdir = f"{data_path}/process_data_not_filter"
+processing_images(
+    indir=indir,
+    outdir=process_outdir,
+    threshold=[(40, 70, 20), (80, 120, 50)],
+    constant=[100, 145, 40],
+    bg_index=[-80, -20, 340, -340],
+    roi_index=300,
+    overwrite=True,
+    threshold_stdev=np.inf,
+    threshold_ratio=np.inf,
+    threshold_delta=np.inf,
+)
+
 # QUESTION: DOES THE NORMALIZATION AFFECT THE RESULT?
-# 1. Combine 3 batches into one models. Using train test split for each dataset and each concentration. Due to random split
+# 1. Combine 3 batches into one models. Using train test split for each dataset and each concentration. Due to random
+# split #noqa
 # Repeate by N time for measuring the variance
 N = 100
 # RAW
 # Change here
-batches = ["batch1", "batch2", "batch3"]
 raw_res = []
 process_type = "raw_roi"
 prefix = "raw_roi"
@@ -49,6 +64,7 @@ for i in range(1, N + 1):
         degree,
         outdir_n,
         prefix,
+        test_size=test_size,
         random_state=None,
     )
     metric = metric[metric["train_data"] != metric["test_data"]]
@@ -60,7 +76,6 @@ pd.DataFrame(pd.concat(raw_res)).to_csv(
 )
 
 # DELTA
-batches = ["batch1", "batch2", "batch3"]
 raw_res = []
 process_type = "delta_normalized_roi"
 prefix = "delta_roi"
@@ -89,6 +104,7 @@ for i in range(1, N + 1):
         degree,
         outdir_n,
         prefix,
+        test_size=test_size,
         random_state=None,
     )
     metric = metric[metric["train_data"] != metric["test_data"]]
@@ -100,7 +116,6 @@ pd.DataFrame(pd.concat(raw_res)).to_csv(
 )
 
 # RATIO
-batches = ["batch1", "batch2", "batch3"]
 raw_res = []
 process_type = "ratio_normalized_roi"
 prefix = "ratio_roi"
@@ -129,6 +144,7 @@ for i in range(1, N + 1):
         degree,
         outdir_n,
         prefix,
+        test_size=test_size,
         random_state=None,
     )
     metric = metric[metric["train_data"] != metric["test_data"]]
