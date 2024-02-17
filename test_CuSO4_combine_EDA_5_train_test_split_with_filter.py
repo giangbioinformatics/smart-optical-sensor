@@ -13,7 +13,7 @@ test_size = 0.2
 batches = ["batch1", "batch2", "batch3", "batch4", "batch5"]
 
 # without filter
-process_outdir = f"{data_path}/process_data_not_filter"
+process_outdir = f"{data_path}/process_data_filter"
 # QUESTION: DOES THE NORMALIZATION AFFECT THE RESULT?
 # 1. Combine 3 batches into one models. Using train test split for each dataset and each concentration. Due to random
 # split #noqa
@@ -26,7 +26,7 @@ process_type = "raw_roi"
 prefix = "raw_roi"
 # Stable
 indir_e2e = f"{process_outdir}/{process_type}"
-outdir_e2e = f"{data_path}/result_without_filter_and_feature_selection_5_batches_train_test_split"
+outdir_e2e = f"{data_path}/result_with_filter_and_feature_selection_5_batches_train_test_split"  # noqa
 features = "meanR,meanG,meanB,modeR,modeB,modeG"
 degree = 1
 outdir = os.path.join(outdir_e2e, process_type, f"repeat_{N}_times")
@@ -51,6 +51,7 @@ for i in range(1, N + 1):
         prefix,
         test_size=test_size,
         random_state=None,
+        # skip_feature_selection=False,
     )
     metric = metric[metric["train_data"] != metric["test_data"]]
     metric["prefix"] = f"repeat_{i}"
@@ -66,7 +67,7 @@ process_type = "delta_normalized_roi"
 prefix = "delta_roi"
 # Stable
 indir_e2e = f"{process_outdir}/{process_type}"
-outdir_e2e = f"{data_path}/result_without_filter_and_feature_selection_5_batches_train_test_split"
+outdir_e2e = f"{data_path}/result_with_filter_and_feature_selection_5_batches_train_test_split"  # noqa
 features = "meanR,meanG,meanB,modeR,modeB,modeG"
 degree = 1
 outdir = os.path.join(outdir_e2e, process_type, f"repeat_{N}_times")
@@ -91,6 +92,7 @@ for i in range(1, N + 1):
         prefix,
         test_size=test_size,
         random_state=None,
+        # skip_feature_selection=False,
     )
     metric = metric[metric["train_data"] != metric["test_data"]]
     metric["prefix"] = f"repeat_{i}"
@@ -106,7 +108,7 @@ process_type = "ratio_normalized_roi"
 prefix = "ratio_roi"
 # Stable
 indir_e2e = f"{process_outdir}/{process_type}"
-outdir_e2e = f"{data_path}/result_without_filter_and_feature_selection_5_batches_train_test_split"
+outdir_e2e = f"{data_path}/result_with_filter_and_feature_selection_5_batches_train_test_split"  # noqa
 features = "meanR,meanG,meanB,modeR,modeB,modeG"
 degree = 1
 outdir = os.path.join(outdir_e2e, process_type, f"repeat_{N}_times")
@@ -131,6 +133,7 @@ for i in range(1, N + 1):
         prefix,
         test_size=test_size,
         random_state=None,
+        # skip_feature_selection=False,
     )
     metric = metric[metric["train_data"] != metric["test_data"]]
     metric["prefix"] = f"repeat_{i}"

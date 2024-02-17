@@ -7,10 +7,10 @@ import pandas as pd
 
 # params
 # Summary: The data is CuSO4 focus which means the camera is focus on the CuSO4 solution to capture the image
-data_path = "EDA/CuSO4_combine"
+data_path = "EDA/Fe3+"
 indir = f"{data_path}/raw_data"
 test_size = 0.2
-batches = ["batch1", "batch2", "batch3", "batch4", "batch5"]
+batches = ["batch1", "batch2", "batch3"]
 
 # without filter
 process_outdir = f"{data_path}/process_data_not_filter"
@@ -26,7 +26,7 @@ process_type = "raw_roi"
 prefix = "raw_roi"
 # Stable
 indir_e2e = f"{process_outdir}/{process_type}"
-outdir_e2e = f"{data_path}/result_without_filter_and_feature_selection_5_batches_train_test_split"
+outdir_e2e = f"{data_path}/result_without_filter_and_feature_selection_3_batches_train_test_split"
 features = "meanR,meanG,meanB,modeR,modeB,modeG"
 degree = 1
 outdir = os.path.join(outdir_e2e, process_type, f"repeat_{N}_times")
@@ -57,7 +57,7 @@ for i in range(1, N + 1):
     raw_res.append(metric)
 # Change here
 pd.DataFrame(pd.concat(raw_res)).to_csv(
-    f"{outdir_e2e}/result_raw_5_batches_train_test_split.csv", index=False
+    f"{outdir_e2e}/result_raw_3_batches_train_test_split.csv", index=False
 )
 
 # DELTA
@@ -66,7 +66,7 @@ process_type = "delta_normalized_roi"
 prefix = "delta_roi"
 # Stable
 indir_e2e = f"{process_outdir}/{process_type}"
-outdir_e2e = f"{data_path}/result_without_filter_and_feature_selection_5_batches_train_test_split"
+outdir_e2e = f"{data_path}/result_without_filter_and_feature_selection_3_batches_train_test_split"
 features = "meanR,meanG,meanB,modeR,modeB,modeG"
 degree = 1
 outdir = os.path.join(outdir_e2e, process_type, f"repeat_{N}_times")
@@ -97,7 +97,7 @@ for i in range(1, N + 1):
     raw_res.append(metric)
 # Change here
 pd.DataFrame(pd.concat(raw_res)).to_csv(
-    f"{outdir_e2e}/result_delta_5_batches_train_test_split.csv", index=False
+    f"{outdir_e2e}/result_delta_3_batches_train_test_split.csv", index=False
 )
 
 # RATIO
@@ -106,7 +106,7 @@ process_type = "ratio_normalized_roi"
 prefix = "ratio_roi"
 # Stable
 indir_e2e = f"{process_outdir}/{process_type}"
-outdir_e2e = f"{data_path}/result_without_filter_and_feature_selection_5_batches_train_test_split"
+outdir_e2e = f"{data_path}/result_without_filter_and_feature_selection_3_batches_train_test_split"
 features = "meanR,meanG,meanB,modeR,modeB,modeG"
 degree = 1
 outdir = os.path.join(outdir_e2e, process_type, f"repeat_{N}_times")
@@ -137,11 +137,11 @@ for i in range(1, N + 1):
     raw_res.append(metric)
 # Change here
 pd.DataFrame(pd.concat(raw_res)).to_csv(
-    f"{outdir_e2e}/result_ratio_5_batches_train_test_split.csv", index=False
+    f"{outdir_e2e}/result_ratio_3_batches_train_test_split.csv", index=False
 )
 
 # Integrate the result
-metrics = glob.glob(f"{outdir_e2e}/*5_batches_train_test_split.csv")
+metrics = glob.glob(f"{outdir_e2e}/*3_batches_train_test_split.csv")
 sum_stats = []
 for m in metrics:
     prepare_stat = pd.read_csv(m)

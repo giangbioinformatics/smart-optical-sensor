@@ -116,7 +116,7 @@ def normalized_execute(
     feature_method: Callable[[Any], float],
     file_name: str,
     outdir: str,
-    threshold_ratio: float = 1,
+    threshold_ratio: float = math.log(1.2, 2),
     threshold_delta: float = 20,
 ) -> Tuple[DataFrame, DataFrame, DataFrame]:
     """Normalized the data according to the background as standard value
@@ -147,9 +147,9 @@ def normalized_execute(
     ratioG = lum[1] / G
     ratioR = lum[2] / R
     if (
-        abs(math.log(ratioB, 2)) > threshold_ratio
-        or abs(math.log(ratioG, 2)) > threshold_ratio
-        or abs(math.log(ratioR, 2)) > threshold_ratio
+        math.log(ratioB, 2) > threshold_ratio
+        or math.log(ratioG, 2) > threshold_ratio
+        or math.log(ratioR, 2) > threshold_ratio
     ):
         ratio_normalized_roi = None
         is_failed_ratio = True
@@ -258,7 +258,6 @@ def image_segmentations(
 
         # ROI
         roi = roi[roi_index:-roi_index, roi_index:-roi_index]
-        # roi = roi[dim[0] - roi_index - 50 : dim[0] - roi_index, 345:-345]  # noqa
 
         # File path
         squared_frame_path = os.path.join(
@@ -280,7 +279,7 @@ def balance_image(
     outdir: str,
     constant: List,
     feature_method: Callable[[Any], float],
-    threshold_ratio: float = 1,
+    threshold_ratio: float = math.log(1.2, 2),
     threshold_delta: float = 20,
 ) -> None:
     """Image color balancing
@@ -571,7 +570,7 @@ def processing_images(
     feature_method: Callable[[Any], float] = np.mean,
     overwrite: bool = True,
     threshold_stdev: float = 5,
-    threshold_ratio: float = 1,
+    threshold_ratio: float = math.log(1.2, 2),
     threshold_delta: float = 20,
 ) -> None:
     """Using the images in raw format, convert to csv, then normalize the images and save to
@@ -637,30 +636,19 @@ def prepare_data(
     if len(test_concentrations) == 0 or test_rgb_path is None:
         combined_train = []
         combined_test = []
-        if test_size == 1:
-            combined_train = []
-            for train_conv in train_concentrations:
-                train = get_data(
-                    rgb_path=train_rgb_path, concentration=train_conv, outdir=outdir
-                )
-                combined_train.append(train)
-
-            train = pd.concat(combined_train, ignore_index=True)
-            test = train
-        else:
-            for train_conv in train_concentrations:
-                train, test, train_path, test_path = train_test_split_by_conv(
-                    conv_path=train_conv,
-                    rgb_path=train_rgb_path,
-                    process_type=prefix,
-                    test_size=test_size,
-                    random_state=random_state,
-                    outdir=outdir,
-                )
-                combined_train.append(train)
-                combined_test.append(test)
-            train = pd.concat(combined_train, ignore_index=True)
-            test = pd.concat(combined_test, ignore_index=True)
+        for train_conv in train_concentrations:
+            train, test, train_path, test_path = train_test_split_by_conv(
+                conv_path=train_conv,
+                rgb_path=train_rgb_path,
+                process_type=prefix,
+                test_size=test_size,
+                random_state=random_state,
+                outdir=outdir,
+            )
+            combined_train.append(train)
+            combined_test.append(test)
+        train = pd.concat(combined_train, ignore_index=True)
+        test = pd.concat(combined_test, ignore_index=True)
     else:
         # case 2: Require train data, test data, not use split
         combined_train = []

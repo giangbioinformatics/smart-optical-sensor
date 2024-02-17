@@ -1,4 +1,6 @@
-from smartsensor.base import processing_images, end2end_model
+from smartsensor.base import end2end_model
+import glob
+import pandas as pd
 
 # Feature
 indir = "examples/raw_data"
@@ -36,10 +38,6 @@ detail
 # 4   0.25-8_batch1.jpg                   0.25                0.226544       0.023456 -0.023456  train
 # 9   0.25-7_batch1.jpg                   0.25                0.274059       0.024059  0.024059  train
 # 2   0.25-5_batch1.jpg                   0.25                0.243689       0.006311 -0.006311  train
-
-import glob
-import pandas as pd
-
 df = pd.DataFrame(glob.glob("*.jpg"), columns=["image"])
 df["batch"] = df["image"].apply(lambda x: x.split("_")[-1].strip(".jpg"))
 df["concentration"] = df["image"].apply(lambda x: float(x.split("-")[0]))
