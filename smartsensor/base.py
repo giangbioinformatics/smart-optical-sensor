@@ -196,7 +196,7 @@ def image_segmentations(
     threshold: List = [(0, 110, 60), (80, 220, 160)],
     dim: List = [740, 740],
     bg_index: List = [50, 60, 350, 360],
-    roi_index: int = 245,
+    roi_index: List = [-250, -200, 345, -345],
 ) -> None:
     """Using the threshold to segment the images to different regions
 
@@ -257,7 +257,8 @@ def image_segmentations(
         ]
 
         # ROI
-        roi = roi[roi_index:-roi_index, roi_index:-roi_index]
+        # roi = roi[roi_index:-roi_index, roi_index:-roi_index]
+        roi = roi[roi_index[0] : roi_index[1], roi_index[2] : roi_index[3]]  # noqa
 
         # File path
         squared_frame_path = os.path.join(
@@ -422,6 +423,7 @@ def train_regression(
     outdir: str,
     prefix: str,
     skip_feature_selection: bool = True,
+    cv: int = 5,
 ) -> str:
     """Using the the training data for turning the regression model
 
@@ -444,7 +446,6 @@ def train_regression(
     else:
         # Using Random Forest Regressor as the estimator for RFECV
         estimator = RandomForestRegressor(random_state=1)
-        cv = int(len(y) / 20)
         print(f"Feature selection using the  the model using CV={cv}")
         rfe_selector = RFECV(estimator, step=1, cv=cv)
         rfe_selector = rfe_selector.fit(x, y)
@@ -565,7 +566,7 @@ def processing_images(
     threshold: List = [(0, 120, 20), (150, 230, 80)],
     dim: List = [740, 740],
     bg_index: List = [50, 60, 350, 360],
-    roi_index: int = 245,
+    roi_index: List = [-250, -200, 345, -345],
     constant: List = [100, 150, 40],
     feature_method: Callable[[Any], float] = np.mean,
     overwrite: bool = True,
@@ -636,19 +637,28 @@ def prepare_data(
     if len(test_concentrations) == 0 or test_rgb_path is None:
         combined_train = []
         combined_test = []
-        for train_conv in train_concentrations:
-            train, test, train_path, test_path = train_test_split_by_conv(
-                conv_path=train_conv,
-                rgb_path=train_rgb_path,
-                process_type=prefix,
-                test_size=test_size,
-                random_state=random_state,
-                outdir=outdir,
-            )
-            combined_train.append(train)
-            combined_test.append(test)
-        train = pd.concat(combined_train, ignore_index=True)
-        test = pd.concat(combined_test, ignore_index=True)
+        if test_size == 1:
+            for train_conv in train_concentrations:
+                train = get_data(
+                    rgb_path=train_rgb_path, concentration=train_conv, outdir=outdir
+                )
+                combined_train.append(train)
+            train = pd.concat(combined_train, ignore_index=True)
+            test = train
+        else:
+            for train_conv in train_concentrations:
+                train, test, train_path, test_path = train_test_split_by_conv(
+                    conv_path=train_conv,
+                    rgb_path=train_rgb_path,
+                    process_type=prefix,
+                    test_size=test_size,
+                    random_state=random_state,
+                    outdir=outdir,
+                )
+                combined_train.append(train)
+                combined_test.append(test)
+            train = pd.concat(combined_train, ignore_index=True)
+            test = pd.concat(combined_test, ignore_index=True)
     else:
         # case 2: Require train data, test data, not use split
         combined_train = []
@@ -684,6 +694,7 @@ def end2end_model(
     skip_feature_selection: bool = True,
     test_size: float = 0.3,
     random_state: int = 1,
+    cv: int = 5,
 ):
     train, test, train_path, test_path = prepare_data(
         train_concentrations=train_concentrations,
@@ -704,6 +715,7 @@ def end2end_model(
         outdir=outdir,
         prefix=prefix,
         skip_feature_selection=skip_feature_selection,
+        cv=cv,
     )
     # Evaluate
     train_metric, train_detail = evaluate_metrics(
