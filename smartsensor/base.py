@@ -438,7 +438,7 @@ def train_regression(
     """
     x = train[features].values.astype(float)
     y = train["concentration"].values.astype(float)
-    cv = None
+    # cv = None
     if skip_feature_selection:
         print("Skip feature selection")
         selected_features = features
@@ -496,14 +496,15 @@ def train_regression(
             for feature, coefficient in zip(feature_names, coefficients)
         }
         # Add intercept to the dictionary
-        coefficients_dict["Intercept"] = intercept
+        # coefficients_dict["Intercept"] = intercept
         # Print the coefficients and intercept with feature names
         fomular = "y = "
         for feature, coefficient in coefficients_dict.items():
-            if feature != "Intercept":
-                fomular += f" + {coefficient}x{'x'.join(feature.split())}"
-            else:
-                fomular += f" + {coefficient}"
+            # if feature != "Intercept":
+            fomular += f" + {coefficient}x{'x'.join(feature.split())}"
+            # else:
+            #     fomular += f" + {coefficient}"
+        fomular += f" + {intercept}"
         f.write(fomular)
         print("Your model is:\n", fomular)
     res = np.round(np.dot(X_selected_poly, coefficients) + intercept, 2)

@@ -7,9 +7,9 @@ import pandas as pd
 
 # params
 # Summary: The data is CuSO4 focus which means the camera is focus on the CuSO4 solution to capture the image
-data_path = "EDA/CuSO4_combine"
+data_path = "EDA/CuSO4"
 indir = f"{data_path}/raw_data"
-test_size = 0.2
+test_size = 0.3
 batches = ["batch1", "batch2", "batch3", "batch4", "batch5"]
 
 # without filter
@@ -18,7 +18,7 @@ process_outdir = f"{data_path}/process_data_not_filter"
 # 1. Combine 3 batches into one models. Using train test split for each dataset and each concentration. Due to random
 # split #noqa
 # Repeate by N time for measuring the variance
-N = 100
+N = 5
 # RAW
 # Change here
 raw_res = []

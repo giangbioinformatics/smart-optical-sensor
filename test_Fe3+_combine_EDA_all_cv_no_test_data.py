@@ -54,4 +54,39 @@ for process_type in process_types:
             metric["ignore_feature_selection"] = ignore
             raw_res.append(metric)
 # save result
-pd.concat(raw_res).to_csv(f"{outdir_e2e}/result.csv", index=False)
+df = pd.DataFrame(pd.concat(raw_res))
+df.to_csv(f"{outdir_e2e}/result.csv", index=False)
+
+print("Best parameters:")
+best_param = df[df.r2 == df.r2.max()].iloc[0]
+print(best_param)
+
+# build model with the best parameters
+process_type = best_param["process_type"]
+degree = best_param["degree"]
+ignore = best_param["ignore_feature_selection"]
+
+outdir = os.path.join(
+                outdir_e2e,
+                "best_param",
+            )
+os.makedirs(outdir, exist_ok=True)
+# train will be used to test again, cv defined inside with 20 images per cross validation
+indir_e2e = f"{process_outdir}/{process_type}"
+train_rgb_path = f"{indir_e2e}/RGB_values.csv"
+train_concentrations = [f"{indir}/{b}.csv" for b in batches]
+test_rgb_path = train_rgb_path
+test_concentrations = train_concentrations
+metric, detail = end2end_model(
+    train_rgb_path,
+    train_concentrations,
+    test_rgb_path,
+    test_concentrations,
+    features,
+    degree,
+    outdir,
+    process_type,
+    test_size=test_size,
+    random_state=1,
+    skip_feature_selection=ignore,
+)
